@@ -4,7 +4,7 @@ pipeline {
         stage('ChekOut-SCM') {
             steps {
                 cleanWs()
-                git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depogithub.git'
+                git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depotgithub.git'
             }
         }
         stage('Create-Conteneur') {
