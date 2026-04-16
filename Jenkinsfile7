@@ -22,7 +22,7 @@ pipeline {
             steps {
                 sh 'cp -r ./mysite ./volumecontapache01'
                 sh 'docker start contapache01'
-                sh 'ls /var/www/html/
+                sh 'ls /var/www/html/'
             }
         }
     }
