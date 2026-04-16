@@ -1,28 +1,50 @@
 pipeline {
     agent any
+
     stages {
-        stage('ChekOut-SCM') {
+
+        stage('Checkout-SCM') {
             steps {
                 cleanWs()
                 git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depotgithub.git'
             }
         }
-        stage('Create-Conteneur') {
+
+        stage('Build Image') {
             steps {
-                sh 'docker stop contapache01 && docker rm contapache01'
-                sh 'docker run -d --name contapache01 --hostname contapache01 -v ./volumecontapache01:/var/www/html --network macvlan192 --ip 192.168.1.20 mon-apache2'
-                sh 'docker start contapache01'
-                sh 'docker ps && docker exec contapache01 "ifconfig"'
-                sh 'docker exec contapache01 service ssh start'
-                sh 'docker exec contapache01 /etc/init.d/apache2 start'
-                sh 'docker exec contapache01 /etc/init.d/apache2 status'
+                sh 'docker build -t mon-apache2 .'
             }
         }
-      stage('Copy-mysite-dans-contapache01') {
+
+        stage('Create-Container') {
             steps {
-                sh 'cp -r ./mysite ./volumecontapache01'
-                sh 'docker start contapache01'
-                sh 'ls /var/www/html/'
+                sh '''
+                docker stop contapache01 || true
+                docker rm contapache01 || true
+
+                docker run -d \
+                --name contapache01 \
+                --hostname contapache01 \
+                -v /var/lib/jenkins/volumecontapache01:/var/www/html \
+                --network macvlan192 \
+                --ip 192.168.1.20 \
+                mon-apache2
+
+                docker ps
+                docker exec contapache01 ifconfig
+                docker exec contapache01 service ssh start
+                docker exec contapache01 /etc/init.d/apache2 start
+                docker exec contapache01 /etc/init.d/apache2 status
+                '''
+            }
+        }
+
+        stage('Copy Site') {
+            steps {
+                sh '''
+                cp -r ./mysite /var/lib/jenkins/volumecontapache01
+                docker exec contapache01 ls /var/www/html/
+                '''
             }
         }
     }
