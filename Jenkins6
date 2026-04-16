@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+    stages {
+        stage('Checkout-SCM') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('install-apache2') {
+            steps {
+                sh 'sudo apt update'
+                sh 'sudo apt install apache2 -y'
+                sh 'sudo systemctl enable --now apache2'
+                sh 'sudo systemctl status apache2'
+            }
+        }
+    }
+}

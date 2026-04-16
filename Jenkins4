@@ -1,0 +1,18 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout-SCM') {
+            steps {
+                cleanWs()
+                git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depotgithub.git'
+            }
+        }
+
+        stage('Build-Image-apache2') {
+            steps {
+                sh 'docker build -t apache2 .'
+            }
+        }
+    }
+}
