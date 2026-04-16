@@ -1,50 +1,25 @@
 pipeline {
     agent any
-
     stages {
-
-        stage('Checkout-SCM') {
+        stage('ChekOut-SCM') {
             steps {
                 cleanWs()
                 git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depotgithub.git'
             }
         }
-
-        stage('Build Image') {
+        stage('Create-conteneur') {
             steps {
-                sh 'docker build -t mon-apache2 .'
+                sh 'docker stop contapache01 && docker rm contapache01'
+                sh 'docker run -d --name contapache01 --hostname contapache01 -v volumecontapache01:/var/www/html --network macvlan192 --ip 192.168.1.20 mon-apache2'
+                sh 'docker ps && docker exec contapache01 "ifconfig"'
+                sh 'docker exec contapache01 service ssh start'
+                sh 'docker exec contapache01 /etc/init.d/apache2 start'
+                sh 'docker exec contapache01 /etc/init.d/apache2 status'
             }
         }
-
-        stage('Create-Container') {
+        stage('Copy-fichiers-mysite-dans-contapache01') {
             steps {
-                sh '''
-                docker stop contapache01 || true
-                docker rm contapache01 || true
-
-                docker run -d \
-                --name contapache01 \
-                --hostname contapache01 \
-                -v /var/lib/jenkins/volumecontapache01:/var/www/html \
-                --network macvlan192 \
-                --ip 192.168.1.20 \
-                mon-apache2
-
-                docker ps
-                docker exec contapache01 ifconfig
-                docker exec contapache01 service ssh start
-                docker exec contapache01 /etc/init.d/apache2 start
-                docker exec contapache01 /etc/init.d/apache2 status
-                '''
-            }
-        }
-
-        stage('Copy Site') {
-            steps {
-                sh '''
-                cp -r ./mysite /var/lib/jenkins/volumecontapache01
-                docker exec contapache01 ls /var/www/html/
-                '''
+                sh 'cp -rf ./mysite/ ./volumecontapache01'
             }
         }
     }
