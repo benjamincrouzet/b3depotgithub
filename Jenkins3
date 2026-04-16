@@ -2,15 +2,16 @@ pipeline {
     agent any
 
     stages {
-        stage('ChekOut-SCM') {
+        stage('Checkout-SCM') {
             steps {
                 cleanWs()
                 git branch: 'main', credentialsId: 'user-benjamincrouzet', url: 'https://github.com/benjamincrouzet/b3depotgithub.git'
             }
         }
-        stage('Build-image-nginx') {
+
+        stage('Build-Image-apache2') {
             steps {
-                sh 'docker build -t mon-nginx .'
+                sh 'docker build -t apache2 .'
             }
         }
     }
